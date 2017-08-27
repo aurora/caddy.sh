@@ -53,7 +53,7 @@ if [ -f $CONF_DIR/../php-fpm.conf ] && [ command -v php-fpm >/dev/null ]; then
     php-fpm -v
     PHP_FPM_CONF=/tmp/octris-php-fpm-$$.conf
     mkfifo -m 0666 $PHP_FPM_CONF
-    ((source $CONF_DIR/../php-fpm.conf > $PHP_FPM_CONF && rm $PHP_FPM_CONF) &)
+    ((source $CONF_DIR/../php-fpm.conf > $PHP_FPM_CONF && rm $PHP_FPM_CONF) &) # fix syntax highlighting: ))
     php-fpm -y $PHP_FPM_CONF
 fi
 
