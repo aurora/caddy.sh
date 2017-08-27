@@ -48,7 +48,7 @@ if [ ! -d $CONF_DIR ]; then
 fi
 
 # php
-if [ -f $CONF_DIR/../php-fpm.conf ] && [ command -v php-fpm >/dev/null ]; then
+if [ -f $CONF_DIR/../php-fpm.conf ] && [ -x "$(command -v php-fpm)" ]; then
     # php doesn't support reading configuration from STDIN
     php-fpm -v
     PHP_FPM_CONF=/tmp/octris-php-fpm-$$.conf
