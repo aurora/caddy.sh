@@ -31,7 +31,7 @@ function resolve_path() {
     )
 }
 
-command -v caddy >/dev/null || {
+[ -x "$(command -v caddy)" ] || {
     echo "caddy webserver not found in path"
     exit 1
 }
