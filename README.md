@@ -12,7 +12,7 @@ Place `caddy.sh` somewhere in your path, eg.:
 
 Create configuration directory and copy the `etc/php-fpm.conf` configuration:
 
-	mkdir ~/.octris/caddy
+	mkdir -p ~/.octris/caddy
 	cp etc/php-fpm.conf ~/.octris/
 
 Place the caddy configuration file `etc/caddy.conf` in the project root
