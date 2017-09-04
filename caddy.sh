@@ -60,7 +60,7 @@ fi
 # virtual hosts
 for i in $CONF_DIR/*; do
     source $i
-done | caddy -conf stdin
+done | caddy "$@" -conf stdin 
 
 # kill php if running
 if [ -f $FASTCGI_PID ]; then
