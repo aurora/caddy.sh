@@ -51,7 +51,7 @@ if [ "$1" = "" ]; then
 fi
 
 if [ ! -d "$CONF_DIR" ] || [ ! -d "$CONF_DIR/templates" ]; then
-    echo "please run caddy.sh install first"
+    echo "please run the caddy.sh installer first"
     exit 1
 fi
 
