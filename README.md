@@ -20,3 +20,7 @@ Adjust the config files for your needs.
 `caddy.sh run`
 
 Runs caddy webserver + php-fpm from configuration files found below `/etc/caddy.sh/hosts/...`.
+
+## Acknowledgements
+
+* resolve_path function 
