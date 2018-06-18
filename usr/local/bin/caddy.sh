@@ -36,7 +36,7 @@ function resolve_path() {
 
 function usage() {
     echo "usage: caddy.sh run [<arguments-for-caddy>]"
-    echo "usage: caddy.sh init <name> <path>"
+    echo "usage: caddy.sh init|deploy <name> <path>"
     echo "example: caddy.sh init example ."
     exit 1
 }
@@ -61,7 +61,7 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 case $1 in
-    init)
+    init | deploy)
         # initialize project and copy templates
         if [ "$3" = "" ]; then
             usage
@@ -86,8 +86,12 @@ case $1 in
 
         for i in $tpl_path/*; do
             dst_file="$dst_path/$(basename $i)"
-            source $i > "$dst_file"
-            chown $LOGIN_USER:$LOGIN_GROUP "$dst_file"
+
+            if [ "$1" = "init" ]; then
+                source $i > "$dst_file"
+                chown $LOGIN_USER:$LOGIN_GROUP "$dst_file"
+            fi
+
             ln -snf "$dst_file" "$CONF_DIR/hosts/$NAME/"
         done
 
