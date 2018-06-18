@@ -55,6 +55,11 @@ if [ ! -d "$CONF_DIR" ] || [ ! -d "$CONF_DIR/templates" ]; then
     exit 1
 fi
 
+if [ "$EUID" -ne 0 ]; then
+    echo "please run as root"
+    exit 1
+fi
+
 case $1 in
     init)
         # initialize project and copy templates
