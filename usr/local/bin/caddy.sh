@@ -35,7 +35,7 @@ function resolve_path() {
 
 function usage() {
     echo "usage: caddy.sh <cmd> [opt ...]"
-    echo "usage: caddy.sh run"
+    echo "usage: caddy.sh run [<arguments-for-caddy>]"
     echo "usage: caddy.sh init|deploy <name> <path>"
     echo "example: caddy.sh init example ."
     echo "example: caddy.sh deploy example ."
@@ -90,44 +90,45 @@ case $1 in
 
         NAME="$2"
 
-        if [ ! -d "$CONF_DIR/$NAME" ]; then
-            mkdir "$CONF_DIR/$NAME"
+        if [ ! -d "$CONF_DIR/hosts/$NAME" ]; then
+            mkdir "$CONF_DIR/hosts/$NAME"
         fi
     
         dst_path=$(resolve_path "$3")
 
-        ln -snf "$dst_path/caddy.conf" "$CONF_DIR/$NAME/"
-        ln -snf "$dst_path/php-fpm.conf" "$CONF_DIR/$NAME/"
+        ln -snf "$dst_path/caddy.conf" "$CONF_DIR/hosts/$NAME/"
+        ln -snf "$dst_path/php-fpm-pool.conf" "$CONF_DIR/hosts/$NAME/"
     
         exit 0
         ;;
     run)
+        shift
+        
         FASTCGI_PID=/tmp/caddy-sh-php-fpm-$$.pid
         WWW_USER=$(logname)
         WWW_GROUP=$(id -gn $WWW_USER)
 
         # php
-        php=$(find "$CONF_DIR" -name "php-fpm.conf" | wc -l)
+        php=$(find "$CONF_DIR" -name "php-fpm-pool.conf" | wc -l)
 
-        if [ php -gt 0 ] && [ -x "$(command -v php-fpm)" ]; then
+        if [ $php -gt 0 ] && [ -x "$(command -v php-fpm)" ]; then
             # php doesn't support reading configuration from STDIN
             php-fpm -v
             PHP_FPM_CONF=/tmp/caddy-sh-php-fpm-$$.conf
-            mkfifo -m 0666 $PHP_FPM_CONF
+            #mkfifo -m 0666 $PHP_FPM_CONF
             ((
-                for i in $(find "$CONF_DIR" -name "php-fpm.conf"); do
+                for i in "$CONF_DIR/php-fpm-global.conf" $(find "$CONF_DIR/hosts/" -name "php-fpm-pool.conf"); do
                     FASTCGI_LISTEN=/tmp/caddy-sh-php-fpm-$(basename $(dirname "$i"))-$$.sock
                     source "$i"
-                done > $PHP_FPM_CONF && rm $PHP_FPM_CONF
+                done > $PHP_FPM_CONF #&& rm $PHP_FPM_CONF
             ) &) # fix syntax highlighting: ))
+                exit
             php-fpm -y $PHP_FPM_CONF
         fi
 
-        exit
-
         # virtual hosts
-        for i in $(find "$CONF_DIR" -name "caddy.conf"); do
-            source $i
+        for i in $(find "$CONF_DIR/hosts/" -name "caddy.conf"); do
+            source "$i"
         done | caddy "$@" -conf stdin
 
         # kill php if running
