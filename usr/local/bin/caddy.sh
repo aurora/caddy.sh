@@ -109,25 +109,23 @@ case $1 in
         WWW_GROUP=$(id -gn $WWW_USER)
 
         # php
-        php=$(find "$CONF_DIR" -name "php-fpm-pool.conf" | wc -l)
-
-        if [ $php -gt 0 ] && [ -x "$(command -v php-fpm)" ]; then
+        if [ -x "$(command -v php-fpm)" ] && [ $(find "$CONF_DIR/hosts/" -name "php-fpm-pool.conf" | wc -l ) -gt 0 ]; then
             # php doesn't support reading configuration from STDIN
             php-fpm -v
             PHP_FPM_CONF=/tmp/caddy-sh-php-fpm-$$.conf
-            #mkfifo -m 0666 $PHP_FPM_CONF
+            mkfifo -m 0666 $PHP_FPM_CONF
             ((
                 for i in "$CONF_DIR/php-fpm-global.conf" $(find "$CONF_DIR/hosts/" -name "php-fpm-pool.conf"); do
-                    FASTCGI_LISTEN=/tmp/caddy-sh-php-fpm-$(basename $(dirname "$i"))-$$.sock
+                    FASTCGI_LISTEN=/caddy-sh-php-fpm-$(basename $(dirname "$i")).sock
                     source "$i"
-                done > $PHP_FPM_CONF #&& rm $PHP_FPM_CONF
+                done > $PHP_FPM_CONF && rm $PHP_FPM_CONF
             ) &) # fix syntax highlighting: ))
-                exit
             php-fpm -y $PHP_FPM_CONF
         fi
 
         # virtual hosts
         for i in $(find "$CONF_DIR/hosts/" -name "caddy.conf"); do
+            FASTCGI_LISTEN=/caddy-sh-php-fpm-$(basename $(dirname "$i")).sock
             source "$i"
         done | caddy "$@" -conf stdin
 
