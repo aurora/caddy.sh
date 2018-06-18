@@ -81,9 +81,14 @@ case $1 in
         dst_path=$(resolve_path "$3")
         tpl_path="$CONF_DIR/templates/"
 
+        LOGIN_USER=$(logname)
+        LOGIN_GROUP=$(id -gn $WWW_USER)
+
         for i in $tpl_path/*; do
-            source $i > "$dst_path/$(basename $i)"
-            ln -snf "$dst_path/$(basename $i)" "$CONF_DIR/hosts/$NAME/"
+            dst_file="$dst_path/$(basename $i)"
+            source $i > "$dst_file"
+            chown $LOGIN_USER:$LOGIN_GROUP "$dst_file"
+            ln -snf "$dst_file" "$CONF_DIR/hosts/$NAME/"
         done
 
         exit 0
