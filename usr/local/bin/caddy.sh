@@ -6,6 +6,7 @@
 #
 # @copyright    copyright (c) 2017-2018 by Harald Lapp
 # @author       Harald Lapp <harald.lapp@gmail.com>
+# @license      MIT
 #
 
 CONF_DIR=/etc/caddy.sh/
