@@ -35,7 +35,6 @@ function resolve_path() {
 }
 
 function usage() {
-    echo "usage: caddy.sh <cmd> [opt ...]"
     echo "usage: caddy.sh run [<arguments-for-caddy>]"
     echo "usage: caddy.sh init <name> <path>"
     echo "example: caddy.sh init example ."
@@ -62,7 +61,7 @@ case $1 in
         if [ "$3" = "" ]; then
             usage
         fi
-    
+
         if [ ! -d "$3" ]; then
             echo "$3 is not a directory"
             exit 1
@@ -72,21 +71,21 @@ case $1 in
 
         if [ ! -d "$CONF_DIR/hosts/$NAME" ]; then
             mkdir "$CONF_DIR/hosts/$NAME"
-        fi    
-    
+        fi
+
         dst_path=$(resolve_path "$3")
         tpl_path="$CONF_DIR/templates/"
-    
+
         for i in $tpl_path/*; do
             source $i > "$dst_path/$(basename $i)"
             ln -snf "$dst_path/$(basename $i)" "$CONF_DIR/hosts/$NAME/"
         done
-    
+
         exit 0
         ;;
     run)
         shift
-        
+
         FASTCGI_PID=/tmp/caddy-sh-php-fpm-$$.pid
         WWW_USER=$(logname)
         WWW_GROUP=$(id -gn $WWW_USER)
