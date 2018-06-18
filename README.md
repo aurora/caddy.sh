@@ -2,7 +2,13 @@
 
 ## Preface
 
-Script for running caddy for easy serving of php based projects during development.
+Script for running caddy for easy serving of php-based projects during development.
+
+## Requirements
+
+* caddy webserver -- https://caddyserver.com/
+* php with php-fpm -- https://php.net/
+* a bash and some php-based projects
 
 ## Installation
 
