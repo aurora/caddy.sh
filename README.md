@@ -6,16 +6,17 @@ Script for running caddy for easy serving of php based projects during developme
 
 ## Installation
 
-Download the latest self-contained installer from https://github.com/aurora/caddy.sh/releases and run it with root privileges.
-The installer will extract the distribution and create configuration files below `/etc/caddy.sh/` and places the `caddy.sh` executable script at `/usr/local/bin`. 
+Download the latest self-contained installer from https://github.com/aurora/caddy.sh/releases and run it with root privileges. The installer will extract the distribution and create configuration files below `/etc/caddy.sh/` and places the `caddy.sh` executable script at `/usr/local/bin`.
 
 ## Usage
 
 `caddy.sh init <name> <path>`
 
-Initialize a project located at `<path>` for usage with `caddy.sh`. The script will create config files for the project from
-templates located at `/etc/caddy.sh/templates` and create symlinks to them in the directory `/etc/caddy.sh/hosts/<name>`. 
-Adjust the config files for your needs.
+Initialize a project located at `<path>` for usage with `caddy.sh`. The script will create config files for the project from the supplied templates located at `/etc/caddy.sh/templates` and create symlinks to them in the directory `/etc/caddy.sh/hosts/<name>`. Adjust the config files for your needs.
+
+`caddy.sh deploy <name> <path>`
+
+Install a project into the `/etc/caddy.sh/hosts/<name>`. Essentially the same as `init`, but without creating the config files from the supplied templates.
 
 `caddy.sh run`
 
