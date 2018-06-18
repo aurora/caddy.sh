@@ -23,4 +23,5 @@ Runs caddy webserver + php-fpm from configuration files found below `/etc/caddy.
 
 ## Acknowledgements
 
-* resolve_path function 
+* resolve_path function -- http://stackoverflow.com/a/1116890/85582
+* build.sh installer -- http://www.matteomattei.com/create-self-contained-installer-in-bash-that-extracts-archives-and-perform-actitions/
