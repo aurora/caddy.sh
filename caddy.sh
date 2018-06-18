@@ -8,6 +8,8 @@
 # @author       Harald Lapp <harald.lapp@gmail.com>
 #
 
+CONF_DIR=/etc/caddy.sh/
+
 # Resolve path of a file including symlinks.
 #
 # @see      http://stackoverflow.com/a/1116890/85582
@@ -31,39 +33,110 @@ function resolve_path() {
     )
 }
 
+function usage() {
+    echo "usage: caddy.sh <cmd> [opt ...]"
+    echo "usage: caddy.sh run"
+    echo "usage: caddy.sh init|deploy <name> <path>"
+    echo "example: caddy.sh init example ."
+    echo "example: caddy.sh deploy example ."
+    exit 1
+}
+
 [ -x "$(command -v caddy)" ] || {
     echo "caddy webserver not found in path"
     exit 1
 }
 
-CONF_DIR=~/.caddy.sh/
-FASTCGI_LISTEN=/tmp/caddy-sh-php-fpm-$$.sock
-FASTCGI_PID=/tmp/caddy-sh-php-fpm-$$.pid
-WWW_USER=$(logname)
-WWW_GROUP=$(id -gn $WWW_USER)
+if [ "$1" = "" ]; then
+    usage
+fi
 
-if [ ! -d $CONF_DIR ]; then
-    echo "configuration files not found in '$CONF_DIR'"
+if [ ! -d "$CONF_DIR" ] || [ ! -d "$CONF_DIR/templates" ]; then
+    echo "please run caddy.sh install first"
     exit 1
 fi
 
-# php
-if [ -f $CONF_DIR/../php-fpm.conf ] && [ -x "$(command -v php-fpm)" ]; then
-    # php doesn't support reading configuration from STDIN
-    php-fpm -v
-    PHP_FPM_CONF=/tmp/caddy-sh-php-fpm-$$.conf
-    mkfifo -m 0666 $PHP_FPM_CONF
-    ((source $CONF_DIR/../php-fpm.conf > $PHP_FPM_CONF && rm $PHP_FPM_CONF) &) # fix syntax highlighting: ))
-    php-fpm -y $PHP_FPM_CONF
-fi
+case $1 in
+    init)
+        # initialize project and copy templates
+        if [ "$3" = "" ]; then
+            usage
+        fi
+    
+        if [ ! -d "$3" ]; then
+            echo "$3 is not a directory"
+            exit 1
+        fi
+    
+        NAME="$2"
+        tpl_path="$CONF_DIR/templates/"
+    
+        for i in $tpl_path/*; do
+            source $i > "$3/$(basename $i)"
+        done
+    
+        exit 0
+        ;;
+    deploy)
+        # deploy project
+        if [ "$3" = "" ]; then
+            usage
+        fi
+        
+        if [ ! -d "$3" ]; then
+            echo "$3 is not a directory"
+            exit 1
+        fi
 
-# virtual hosts
-for i in $CONF_DIR/*; do
-    source $i
-done | caddy "$@" -conf stdin 
+        NAME="$2"
 
-# kill php if running
-if [ -f $FASTCGI_PID ]; then
-    pid=$(cat $FASTCGI_PID)
-    kill $pid
-fi
+        if [ ! -d "$CONF_DIR/$NAME" ]; then
+            mkdir "$CONF_DIR/$NAME"
+        fi
+    
+        dst_path=$(resolve_path "$3")
+
+        ln -snf "$dst_path/caddy.conf" "$CONF_DIR/$NAME/"
+        ln -snf "$dst_path/php-fpm.conf" "$CONF_DIR/$NAME/"
+    
+        exit 0
+        ;;
+    run)
+        FASTCGI_PID=/tmp/caddy-sh-php-fpm-$$.pid
+        WWW_USER=$(logname)
+        WWW_GROUP=$(id -gn $WWW_USER)
+
+        # php
+        php=$(find "$CONF_DIR" -name "php-fpm.conf" | wc -l)
+
+        if [ php -gt 0 ] && [ -x "$(command -v php-fpm)" ]; then
+            # php doesn't support reading configuration from STDIN
+            php-fpm -v
+            PHP_FPM_CONF=/tmp/caddy-sh-php-fpm-$$.conf
+            mkfifo -m 0666 $PHP_FPM_CONF
+            ((
+                for i in $(find "$CONF_DIR" -name "php-fpm.conf"); do
+                    FASTCGI_LISTEN=/tmp/caddy-sh-php-fpm-$(basename $(dirname "$i"))-$$.sock
+                    source "$i"
+                done > $PHP_FPM_CONF && rm $PHP_FPM_CONF
+            ) &) # fix syntax highlighting: ))
+            php-fpm -y $PHP_FPM_CONF
+        fi
+
+        exit
+
+        # virtual hosts
+        for i in $(find "$CONF_DIR" -name "caddy.conf"); do
+            source $i
+        done | caddy "$@" -conf stdin
+
+        # kill php if running
+        if [ -f $FASTCGI_PID ]; then
+            pid=$(cat $FASTCGI_PID)
+            kill $pid
+        fi
+        ;;
+    *)
+        usage
+        ;;
+esac
