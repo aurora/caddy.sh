@@ -55,11 +55,6 @@ if [ ! -d "$CONF_DIR" ] || [ ! -d "$CONF_DIR/templates" ]; then
     exit 1
 fi
 
-if [ "$EUID" -ne 0 ]; then
-    echo "please run as root"
-    exit 1
-fi
-
 case $1 in
     init | deploy)
         # initialize project and copy templates
@@ -69,6 +64,11 @@ case $1 in
 
         if [ ! -d "$3" ]; then
             echo "$3 is not a directory"
+            exit 1
+        fi
+
+        if [ "$EUID" -ne 0 ]; then
+            echo "please run as root"
             exit 1
         fi
 
@@ -98,6 +98,11 @@ case $1 in
         exit 0
         ;;
     run)
+        if [ "$EUID" -ne 0 ]; then
+            echo "please run as root"
+            exit 1
+        fi
+
         shift
 
         FASTCGI_PID=/tmp/caddy-sh-php-fpm-$$.pid
