@@ -17,7 +17,7 @@ fi
 
 set -e
 
-tar xzmopP -C / -f \$tmp
+untar_payload "/"
 
 mkdir -p /etc/caddy.sh/hosts
 mkdir -p /etc/caddy.sh/templates
