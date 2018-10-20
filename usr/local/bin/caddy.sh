@@ -93,7 +93,9 @@ case $1 in
                 chown $LOGIN_USER:$LOGIN_GROUP "$dst_file"
             fi
 
-            ln -snf "$dst_file" "$CONF_DIR/hosts/$NAME/"
+            if [ -f "$dst_file" ]; then
+                ln -snf "$dst_file" "$CONF_DIR/hosts/$NAME/"
+            fi
         done
 
         exit 0
