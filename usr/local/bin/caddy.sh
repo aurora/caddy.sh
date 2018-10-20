@@ -35,6 +35,7 @@ function resolve_path() {
 }
 
 function usage() {
+    echo "usage: caddy.sh print"
     echo "usage: caddy.sh run [<arguments-for-caddy>]"
     echo "usage: caddy.sh init|deploy <name> <path>"
     echo "example: caddy.sh init example ."
@@ -96,6 +97,25 @@ case $1 in
         done
 
         exit 0
+        ;;
+    print)
+        FASTCGI_PID=/tmp/caddy-sh-php-fpm-$$.pid
+        WWW_USER=$(logname)
+        WWW_GROUP=$(id -gn $WWW_USER)
+
+        # php
+        if [ -x "$(command -v php-fpm)" ]; then
+            for i in "$CONF_DIR/php-fpm-global.conf" $(find "$CONF_DIR/hosts/" -name "php-fpm-pool.conf"); do
+                FASTCGI_LISTEN=/caddy-sh-php-fpm-$(basename $(dirname "$i")).sock
+                source "$i"
+            done
+        fi
+
+        # virtual hosts
+        for i in $(find "$CONF_DIR/hosts/" -name "caddy.conf"); do
+            FASTCGI_LISTEN=/caddy-sh-php-fpm-$(basename $(dirname "$i")).sock
+            source "$i"
+        done
         ;;
     run)
         if [ "$EUID" -ne 0 ]; then
