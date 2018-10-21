@@ -24,6 +24,10 @@ Initialize a project located at `<path>` for usage with `caddy.sh`. The script w
 
 Install a project into the `/etc/caddy.sh/hosts/<name>`. Essentially the same as `init`, but without creating the config files from the supplied templates.
 
+`caddy.sh print`
+
+Print the configuration file that will be used when running caddy.sh.
+
 `caddy.sh run`
 
 Runs caddy webserver + php-fpm from configuration files found below `/etc/caddy.sh/hosts/...`.
