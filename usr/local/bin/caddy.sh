@@ -113,6 +113,8 @@ case $1 in
             done
         fi
 
+        echo
+
         # virtual hosts
         for i in $(find "$CONF_DIR/hosts/" -name "caddy.conf"); do
             FASTCGI_LISTEN=/caddy-sh-php-fpm-$(basename $(dirname "$i")).sock
