@@ -91,10 +91,10 @@ case $1 in
             if [ "$1" = "init" ]; then
                 source $i > "$dst_file"
                 chown $LOGIN_USER:$LOGIN_GROUP "$dst_file"
-            fi
-
-            if [ -f "$dst_file" ]; then
-                ln -snf "$dst_file" "$CONF_DIR/hosts/$NAME/"
+            else
+                if [ -f "$dst_file" ]; then
+                    ln -snf "$dst_file" "$CONF_DIR/hosts/$NAME/"
+                fi
             fi
         done
 
