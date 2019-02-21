@@ -112,7 +112,7 @@ case $1 in
         # php
         if [ -x "$(command -v php-fpm)" ]; then
             for i in "$CONF_DIR/php-fpm-global.conf" $(find "$CONF_DIR/hosts/" -name "php-fpm-pool.conf"); do
-                FASTCGI_LISTEN=/caddy-sh-php-fpm-$(basename $(dirname "$i")).sock
+                FASTCGI_LISTEN=/tmp/caddy-sh-php-fpm-$(basename $(dirname "$i")).sock
                 source "$i"
             done
         fi
@@ -121,7 +121,7 @@ case $1 in
 
         # virtual hosts
         for i in $(find "$CONF_DIR/hosts/" -name "caddy.conf"); do
-            FASTCGI_LISTEN=/caddy-sh-php-fpm-$(basename $(dirname "$i")).sock
+            FASTCGI_LISTEN=/tmp/caddy-sh-php-fpm-$(basename $(dirname "$i")).sock
             source "$i"
         done
         ;;
@@ -158,7 +158,7 @@ case $1 in
             mkfifo -m 0666 $PHP_FPM_CONF
             ((
                 for i in "$CONF_DIR/php-fpm-global.conf" $(find "$CONF_DIR/hosts/" -name "php-fpm-pool.conf"); do
-                    FASTCGI_LISTEN=/caddy-sh-php-fpm-$(basename $(dirname "$i")).sock
+                    FASTCGI_LISTEN=/tmp/caddy-sh-php-fpm-$(basename $(dirname "$i")).sock
                     source "$i"
                 done > $PHP_FPM_CONF && rm $PHP_FPM_CONF
             ) &) # fix syntax highlighting: ))
@@ -168,7 +168,7 @@ case $1 in
         # include event scripts and call onstart event
         for i in $(find "$CONF_DIR/hosts/" -name "caddy-events.sh"); do
             FUNC=$(basename $(dirname "$i"))_onstart
-            FASTCGI_LISTEN=/caddy-sh-php-fpm-$NAME.sock
+            FASTCGI_LISTEN=/tmp/caddy-sh-php-fpm-$(basename $(dirname "$i")).sock
             source "$i"
             
             if fn_exists $FUNC; then 
@@ -178,7 +178,7 @@ case $1 in
 
         # virtual hosts / run caddy
         for i in $(find "$CONF_DIR/hosts/" -name "caddy.conf"); do
-            FASTCGI_LISTEN=/caddy-sh-php-fpm-$(basename $(dirname "$i")).sock
+            FASTCGI_LISTEN=/tmp/caddy-sh-php-fpm-$(basename $(dirname "$i")).sock
             source "$i"
         done | caddy "$@" -conf stdin
 
