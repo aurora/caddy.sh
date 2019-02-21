@@ -4,7 +4,7 @@
 # Script for running caddy for easy serving of php based projects
 # during development.
 #
-# @copyright    copyright (c) 2017-2018 by Harald Lapp
+# @copyright    copyright (c) 2017-2019 by Harald Lapp
 # @author       Harald Lapp <harald.lapp@gmail.com>
 # @license      MIT
 #
@@ -32,6 +32,10 @@ function resolve_path() {
 
         echo "$(pwd -P)"
     )
+}
+
+function fn_exists() {
+    [ -n "$(LC_ALL=C type -t $1)" ] && [ "$(LC_ALL=C type -t $1)" = function ]
 }
 
 function usage() {
@@ -161,11 +165,31 @@ case $1 in
             php-fpm -y $PHP_FPM_CONF
         fi
 
-        # virtual hosts
+        # include event scripts and call onstart event
+        for i in $(find "$CONF_DIR/hosts/" -name "caddy-events.sh"); do
+            FUNC=$(basename $(dirname "$i"))_onstart
+            FASTCGI_LISTEN=/caddy-sh-php-fpm-$NAME.sock
+            source "$i"
+            
+            if fn_exists $FUNC; then 
+                $FUNC
+            fi
+        done
+
+        # virtual hosts / run caddy
         for i in $(find "$CONF_DIR/hosts/" -name "caddy.conf"); do
             FASTCGI_LISTEN=/caddy-sh-php-fpm-$(basename $(dirname "$i")).sock
             source "$i"
         done | caddy "$@" -conf stdin
+
+        # call onstop event
+        for i in $(find "$CONF_DIR/hosts/" -name "caddy-events.sh"); do
+            FUNC=$(basename $(dirname "$i"))_onstop
+            
+            if fn_exists $FUNC; then 
+                $FUNC
+            fi
+        done
 
         # kill php if running
         if [ -f $FASTCGI_PID ]; then
