@@ -121,6 +121,19 @@ case $1 in
             source "$i"
         done
         ;;
+    list)
+        for i in $(find "$CONF_DIR/hosts/" -name "caddy.conf"); do
+            tmp="$(dirname "$i")"
+            
+            echo -n $(basename "$tmp")
+
+            if [ -L $tmp ]; then
+                echo $(readlink "$tmp")
+            fi
+            
+            echo
+        done
+        ;;
     run)
         if [ "$EUID" -ne 0 ]; then
             echo "please run as root"
