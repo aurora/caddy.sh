@@ -18,15 +18,19 @@ Download the latest self-contained installer from https://github.com/aurora/cadd
 
 `caddy.sh init <name> <path>`
 
-Initialize a project located at `<path>` for usage with `caddy.sh`. The script will create config files for the project from the supplied templates located at `/etc/caddy.sh/templates` and create symlinks to them in the directory `/etc/caddy.sh/hosts/<name>`. Adjust the config files for your needs.
+Initialize a project located at `<path>` for usage with `caddy.sh`. The script will create config files for the project from the supplied templates located at `/etc/caddy.sh/templates` in the specified path.  Adjust the config files for your needs.
 
 `caddy.sh deploy <name> <path>`
 
-Install a project into the `/etc/caddy.sh/hosts/<name>`. Essentially the same as `init`, but without creating the config files from the supplied templates.
+Install a project into the `/etc/caddy.sh/hosts/<name>`.  Creates symlinks to the configuration files located in the specified path in the directory `/etc/caddy.sh/hosts/<name>`.
 
 `caddy.sh print`
 
 Print the configuration file that will be used when running caddy.sh.
+
+`caddy.sh list`
+
+List the installed projects.
 
 `caddy.sh run`
 
