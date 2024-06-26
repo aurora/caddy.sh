@@ -17,21 +17,33 @@ CONF_DIR=/etc/caddy.sh/
 # @param    string      $1          Path to resolve.
 #
 function resolve_path() {
-    local TARGET_FILE=$1
-    local PHYS_DIR
+    local TARGET=$1
 
     (
-        cd $(dirname $TARGET_FILE)
-        TARGET_FILE=$(basename $TARGET_FILE)
+        cd $(dirname $TARGET)
+        TARGET=$(basename $TARGET)
+        echo $TARGET 
 
-        while [ -L "$TARGET_FILE" ]; do
-            TARGET_FILE=$(readlink $TARGET_FILE)
-            cd $(dirname $TARGET_FILE)
-            TARGET_FILE=$(basename $TARGET_FILE)
+        while [ -L "$TARGET" ]; do
+            TARGET=$(readlink $TARGET)
+            cd $(dirname $TARGET)
+            TARGET=$(basename $TARGET)
         done
 
-        echo "$(pwd -P)"
+        echo "$(pwd -P)/$TARGET"
     )
+}
+
+function resolve_user() {
+    if [[ "$SUDO_USER" = "" ]]; then
+        id -un
+    else
+        echo $SUDO_USER
+    fi
+}
+
+function resolve_root() {
+    echo $(dirname $(readlink "$1"))
 }
 
 function fn_exists() {
@@ -86,7 +98,7 @@ case $1 in
         dst_path=$(resolve_path "$3")
         tpl_path="$CONF_DIR/templates/"
 
-        LOGIN_USER=$(logname)
+        LOGIN_USER=$(resolve_user)
         LOGIN_GROUP=$(id -gn $WWW_USER)
 
         for i in $tpl_path/*; do
@@ -106,12 +118,13 @@ case $1 in
         ;;
     print)
         FASTCGI_PID=/tmp/caddy-sh-php-fpm-$$.pid
-        WWW_USER=$(logname)
+        WWW_USER=$(resolve_user)
         WWW_GROUP=$(id -gn $WWW_USER)
 
         # php
         if [ -x "$(command -v php-fpm)" ]; then
             for i in "$CONF_DIR/php-fpm-global.conf" $(find "$CONF_DIR/hosts/" -name "php-fpm-pool.conf"); do
+	            ROOT_DIR=$(resolve_root $i)
                 FASTCGI_LISTEN=/tmp/caddy-sh-php-fpm-$(basename $(dirname "$i")).sock
                 source "$i"
             done
@@ -121,6 +134,7 @@ case $1 in
 
         # virtual hosts
         for i in $(find "$CONF_DIR/hosts/" -name "caddy.conf"); do
+	        ROOT_DIR=$(resolve_root $i)
             FASTCGI_LISTEN=/tmp/caddy-sh-php-fpm-$(basename $(dirname "$i")).sock
             source "$i"
         done
@@ -147,7 +161,7 @@ case $1 in
         shift
 
         FASTCGI_PID=/tmp/caddy-sh-php-fpm-$$.pid
-        WWW_USER=$(logname)
+        WWW_USER=$(resolve_user)
         WWW_GROUP=$(id -gn $WWW_USER)
 
         # php
@@ -158,6 +172,7 @@ case $1 in
             mkfifo -m 0666 $PHP_FPM_CONF
             ((
                 for i in "$CONF_DIR/php-fpm-global.conf" $(find "$CONF_DIR/hosts/" -name "php-fpm-pool.conf"); do
+	                ROOT_DIR=$(resolve_root $i)
                     FASTCGI_LISTEN=/tmp/caddy-sh-php-fpm-$(basename $(dirname "$i")).sock
                     source "$i"
                 done > $PHP_FPM_CONF && rm $PHP_FPM_CONF
@@ -168,6 +183,7 @@ case $1 in
         # include event scripts and call onstart event
         for i in $(find "$CONF_DIR/hosts/" -name "caddy-events.sh"); do
             FUNC=$(basename $(dirname "$i"))_onstart
+	        ROOT_DIR=$(resolve_root $i)
             FASTCGI_LISTEN=/tmp/caddy-sh-php-fpm-$(basename $(dirname "$i")).sock
             source "$i"
             
@@ -179,6 +195,7 @@ case $1 in
         # virtual hosts / run caddy
         for i in $(find "$CONF_DIR/hosts/" -name "caddy.conf"); do
             FASTCGI_LISTEN=/tmp/caddy-sh-php-fpm-$(basename $(dirname "$i")).sock
+	        ROOT_DIR=$(resolve_root $i)
             source "$i"
         done | caddy "$@" -conf stdin
 
