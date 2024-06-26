@@ -6,9 +6,11 @@ Script for running caddy for easy serving of php-based projects during developme
 
 ## Requirements
 
-* caddy webserver -- https://caddyserver.com/
+* caddy webserver -- https://caddyserver.com/, https://github.com/caddyserver/caddy/releases/tag/v1.0.4
 * php with php-fpm -- https://php.net/
 * a bash and some php-based projects
+
+Note: currently it only works with caddy v1.
 
 ## Installation
 
