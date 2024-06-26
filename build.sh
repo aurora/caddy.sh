@@ -23,7 +23,7 @@ mkdir -p /etc/caddy.sh/hosts
 mkdir -p /etc/caddy.sh/templates
 
 for i in php-fpm-global.conf templates/caddy.conf templates/php-fpm-pool.conf templates/caddy-events.sh; do
-    cp usr/local/etc/caddy.sh/\$i /etc/caddy.sh/
+    cp usr/local/etc/caddy.sh/\$i /etc/caddy.sh/\$i
 done
 INSTALLER
 ) dist/caddysh_installer.bin usr
