@@ -10,7 +10,7 @@
 rm -f dist/caddysh_installer.bin
 
 mkinst -i <(cat << INSTALLER
-if [ "\$EUID" -ne 0 ]; then
+if [ \$(id -u) -ne 0 ]; then
     echo "Please run as root."
     exit 1
 fi 
@@ -22,8 +22,8 @@ untar_payload "/"
 mkdir -p /etc/caddy.sh/hosts
 mkdir -p /etc/caddy.sh/templates
 
-for i in php-fpm-global.conf templates/caddy.conf templates/php-fpm-pool.conf templates/caddy-onstart.sh; do
-    cp /usr/local/etc/caddy.sh/\$i /etc/caddy.sh/
+for i in php-fpm-global.conf templates/caddy.conf templates/php-fpm-pool.conf templates/caddy-events.sh; do
+    cp usr/local/etc/caddy.sh/\$i /etc/caddy.sh/
 done
 INSTALLER
 ) dist/caddysh_installer.bin usr
