@@ -42,11 +42,7 @@ function resolve_user() {
 }
 
 function resolve_dir() {
-    if [ -L "$1" ]; then
-        echo $(dirname $(readlink "$1"))
-    else
-        echo $(dirname "$1")
-    fi
+    echo $(dirname $(resolve_path "$1"))
 }
 
 function fn_exists() {
