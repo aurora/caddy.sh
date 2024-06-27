@@ -22,7 +22,6 @@ function resolve_path() {
     (
         cd $(dirname $TARGET)
         TARGET=$(basename $TARGET)
-        echo $TARGET 
 
         while [ -L "$TARGET" ]; do
             TARGET=$(readlink $TARGET)
@@ -42,8 +41,12 @@ function resolve_user() {
     fi
 }
 
-function resolve_root() {
-    echo $(dirname $(readlink "$1"))
+function resolve_dir() {
+    if [ -L "$1" ]; then
+        echo $(dirname $(readlink "$1"))
+    else
+        echo $(dirname "$1")
+    fi
 }
 
 function fn_exists() {
@@ -124,7 +127,7 @@ case $1 in
         # php
         if [ -x "$(command -v php-fpm)" ]; then
             for i in "$CONF_DIR/php-fpm-global.conf" $(find "$CONF_DIR/hosts/" -name "php-fpm-pool.conf"); do
-	            ROOT_DIR=$(resolve_root $i)
+                ROOT_DIR=$(resolve_dir "$i")
                 FASTCGI_LISTEN=/tmp/caddy-sh-php-fpm-$(basename $(dirname "$i")).sock
                 source "$i"
             done
@@ -134,7 +137,7 @@ case $1 in
 
         # virtual hosts
         for i in $(find "$CONF_DIR/hosts/" -name "caddy.conf"); do
-	        ROOT_DIR=$(resolve_root $i)
+            ROOT_DIR=$(resolve_dir "$i")
             FASTCGI_LISTEN=/tmp/caddy-sh-php-fpm-$(basename $(dirname "$i")).sock
             source "$i"
         done
@@ -172,7 +175,7 @@ case $1 in
             mkfifo -m 0666 $PHP_FPM_CONF
             ((
                 for i in "$CONF_DIR/php-fpm-global.conf" $(find "$CONF_DIR/hosts/" -name "php-fpm-pool.conf"); do
-	                ROOT_DIR=$(resolve_root $i)
+                    ROOT_DIR=$(resolve_dir "$i")
                     FASTCGI_LISTEN=/tmp/caddy-sh-php-fpm-$(basename $(dirname "$i")).sock
                     source "$i"
                 done > $PHP_FPM_CONF && rm $PHP_FPM_CONF
@@ -183,7 +186,7 @@ case $1 in
         # include event scripts and call onstart event
         for i in $(find "$CONF_DIR/hosts/" -name "caddy-events.sh"); do
             FUNC=$(basename $(dirname "$i"))_onstart
-	        ROOT_DIR=$(resolve_root $i)
+            ROOT_DIR=$(resolve_dir "$i")
             FASTCGI_LISTEN=/tmp/caddy-sh-php-fpm-$(basename $(dirname "$i")).sock
             source "$i"
             
@@ -195,7 +198,7 @@ case $1 in
         # virtual hosts / run caddy
         for i in $(find "$CONF_DIR/hosts/" -name "caddy.conf"); do
             FASTCGI_LISTEN=/tmp/caddy-sh-php-fpm-$(basename $(dirname "$i")).sock
-	        ROOT_DIR=$(resolve_root $i)
+            ROOT_DIR=$(resolve_dir "$i")
             source "$i"
         done | caddy "$@" -conf stdin
 
