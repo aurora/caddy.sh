@@ -71,6 +71,8 @@ if [ ! -d "$CONF_DIR" ] || [ ! -d "$CONF_DIR/templates" ]; then
     exit 1
 fi
 
+phpfpm="${PHPFPM:-"php-fpm"}"
+
 case $1 in
     init | deploy)
         # initialize project and copy templates
@@ -121,7 +123,7 @@ case $1 in
         WWW_GROUP=$(id -gn $WWW_USER)
 
         # php
-        if [ -x "$(command -v php-fpm)" ]; then
+        if [ -x "$(command -v $phpfpm)" ]; then
             for i in "$CONF_DIR/php-fpm-global.conf" $(find "$CONF_DIR/hosts/" -name "php-fpm-pool.conf"); do
                 ROOT_DIR=$(resolve_dir "$i")
                 FASTCGI_LISTEN=/tmp/caddy-sh-php-fpm-$(basename $(dirname "$i")).sock
@@ -164,9 +166,9 @@ case $1 in
         WWW_GROUP=$(id -gn $WWW_USER)
 
         # php
-        if [ -x "$(command -v php-fpm)" ] && [ $(find "$CONF_DIR/hosts/" -name "php-fpm-pool.conf" | wc -l ) -gt 0 ]; then
+        if [ -x "$(command -v $phpfpm)" ] && [ $(find "$CONF_DIR/hosts/" -name "php-fpm-pool.conf" | wc -l ) -gt 0 ]; then
             # php doesn't support reading configuration from STDIN
-            php-fpm -v
+            $phpfpm -v
             PHP_FPM_CONF=/tmp/caddy-sh-php-fpm-$$.conf
             mkfifo -m 0666 $PHP_FPM_CONF
             ((
